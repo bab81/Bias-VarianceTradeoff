@@ -15,8 +15,8 @@ ind2 = y == 2
 plt.figure(figsize=(10,6))
 plt.scatter(X[ind1, 0], X[ind1, 1], c='r', marker='o', label='Class 1')
 plt.scatter(X[ind2, 0], X[ind2, 1], c='b', marker='o', label='Class 2')
-#plt.legend();
-plt.show();
+plt.legend();
+#plt.show();
 
 
 def computeybar(xTe, OFFSET):
@@ -43,9 +43,48 @@ def computeybar(xTe, OFFSET):
     # By default, mean is 0 and std. deviation is 1.
     normpdf = lambda x, mu, sigma: np.exp(-0.5 * np.power((x - mu) / sigma, 2)) / (np.sqrt(2 * np.pi) * sigma)
 
-    # YOUR CODE HERE
-    raise NotImplementedError()
+    # step 1: calculate 𝑝(𝐱|𝑦=1) = 𝑝(𝑥1|𝑦=1)𝑝(𝑥2|𝑦=1)
+
+    # step 1a: 𝑝(𝑥1|𝑦=1)
+    pofx1_givenyis1 = normpdf(xTe[:, 0], 0, 1)
+    # step 1b: 𝑝(𝑥2|𝑦=1)
+    pofx2_givenyis1 = normpdf(xTe[:, 1], 0, 1)
+
+    # complete step 1: calculate 𝑝(𝐱|𝑦=1) = 𝑝(𝑥1|𝑦=1)𝑝(𝑥2|𝑦=1)
+    pofx_givenyis1 = np.multiply(pofx1_givenyis1, pofx2_givenyis1)
+
+    # step 2: calculate 𝑝(𝐱|𝑦=2) = 𝑝(𝑥1|𝑦=2)𝑝(𝑥2|𝑦=2)
+
+    # step 2a: 𝑝(𝑥1|𝑦=2)
+    pofx1_givenyis2 = normpdf(xTe[:, 0], OFFSET, 1)
+    # step 2b: 𝑝(𝑥2|𝑦=2)
+    pofx2_givenyis2 = normpdf(xTe[:, 1], OFFSET, 1)
+
+    # complete step 2: calculate 𝑝(𝐱|𝑦=2) = 𝑝(𝑥1|𝑦=2)𝑝(𝑥2|𝑦=2)
+    pofx_givenyis2 = np.multiply(pofx1_givenyis2, pofx2_givenyis2)
+
+    # step 3
+    numerator = pofx_givenyis1 + 2 * pofx_givenyis2
+    denominator = pofx_givenyis1 + pofx_givenyis2
+
+    # step 4
+    ybar = numerator / denominator
+
     return ybar
+
+
+OFFSET = 3;
+xTe = np.array([
+    [0.45864, 0.71552],
+    [2.44662, 1.68167],
+    [1.00345, 0.15182],
+    [-0.10560, -0.48155],
+    [3.07264, 3.81535],
+    [3.13035, 2.72151],
+    [2.25265, 3.78697]])
+yTe = np.array([1, 2, 1, 1, 2, 2, 2])
+
+ybar = computeybar(xTe, OFFSET)
 
 
 # biasvariancedemo
@@ -61,7 +100,6 @@ NMODELS = 100
 depths = [0, 1, 2, 3, 4, 5, 6, np.inf]
 
 # we store
-print(np.inf)
 Ndepths = len(depths)
 lbias = np.zeros(Ndepths)
 lvariance = np.zeros(Ndepths)
